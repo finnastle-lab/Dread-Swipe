@@ -1,0 +1,8 @@
+{
+  "name": "DreadSwipe - Elevated Horror & Thriller Tinder",
+  "description": "Elevated dread with a body count. A horror & thriller discovery app with customizable taste taxonomy, Google Sheets master persistent memory, and Letterboxd export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
