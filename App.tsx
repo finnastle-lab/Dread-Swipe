@@ -49,7 +49,8 @@ import {
   Loader2,
   Sparkles,
   SlidersHorizontal,
-  FileSpreadsheet
+  FileSpreadsheet,
+  AlertTriangle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -90,6 +91,14 @@ const App: React.FC = () => {
   const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [showGoogleSheetsModal, setShowGoogleSheetsModal] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [dismissedGestureHint, setDismissedGestureHint] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('dread_dismissed_gesture_hint') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   // Google Sheets Master Sync State
   const [sheetsSyncState, setSheetsSyncState] = useState<GoogleSheetsSyncState>(() => {
@@ -112,7 +121,7 @@ const App: React.FC = () => {
 
   // Active Filters
   const [filters, setFilters] = useState<FilterState>({
-    selectedVibes: ['Elevated', 'Body Horror', 'Folk / Ritual', 'Prestige Crime', 'Sicko Mode'],
+    selectedVibes: ['Elevated', 'Folk / Ritual', 'Cerebral Sci-Fi', 'International Arthouse'],
     minDread: 1,
     maxDread: 5,
     pacing: 'all',
@@ -545,6 +554,13 @@ const App: React.FC = () => {
       seenTitles.current.add(normalizeTitle(currentMovie.title));
     }
 
+    if (!dismissedGestureHint) {
+      setDismissedGestureHint(true);
+      try {
+        localStorage.setItem('dread_dismissed_gesture_hint', 'true');
+      } catch (e) {}
+    }
+
     // Save bump feedback
     setVaultBump(true);
     setTimeout(() => setVaultBump(false), 1200);
@@ -603,8 +619,8 @@ const App: React.FC = () => {
       }
 
       triggerToast({
-        message: `🔥 SICKO ANCHOR: "${currentMovie.title}"`,
-        subtext: `Spawning ${similarCurated.length > 0 ? similarCurated.length : 'similar'} matching masterworks into deck...`,
+        message: `🔥 DEEP END ANCHOR: "${currentMovie.title}"`,
+        subtext: `Spawning ${similarCurated.length > 0 ? similarCurated.length : 'similar'} matches into your deck...`,
         type: 'sicko'
       });
 
@@ -823,11 +839,15 @@ const App: React.FC = () => {
     seenTitles.current.clear();
     setHistory({ watched: [], disliked: [], watchlist: [], sickoMode: [] });
     setLastAction(null);
+    try {
+      localStorage.removeItem('dread_onboarding_completed');
+    } catch (e) {}
+    setShowOnboarding(true);
     const newPool = CURATED_MOVIES.filter(filterMovie).sort(() => 0.5 - Math.random());
     setStack(newPool);
     triggerToast({
       message: 'History Cleared',
-      subtext: 'All swiped records cleared & clean deck loaded',
+      subtext: 'Starting fresh — welcome back to onboarding.',
       type: 'rotten'
     });
   };
@@ -869,6 +889,7 @@ const App: React.FC = () => {
   }
 
   const totalSavedCount = history.watched.length + history.watchlist.length + history.sickoMode.length;
+  const totalSwipes = totalSavedCount + history.disliked.length;
 
   return (
     <div className="h-screen w-full bg-black text-white relative flex flex-col items-center overflow-hidden font-sans select-none">
@@ -887,15 +908,15 @@ const App: React.FC = () => {
 
         {/* Action Controls: Reset, Google Sheets & Vault Top Right */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Reset Search Deck */}
+          {/* New Search Deck */}
           <button
             type="button"
-            onClick={handleResetDeck}
-            title="Reset Deck & Restart Search"
+            onClick={() => setShowResetConfirm(true)}
+            title="Start a new search — keeps your Vault"
             className="bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 px-2.5 sm:px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-zinc-400 hover:text-zinc-200 transition-all active:scale-95 shadow-sm"
           >
             <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-[10px]">Reset</span>
+            <span className="text-[10px]">New Search</span>
           </button>
 
           {/* Google Sheets Persistent Memory Pill */}
@@ -942,8 +963,8 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* 2. ATTACHED MAIN STACK: FILTERS, CARD, AND CONTROLS (Tightly coupled with 30-40px spacing below card) */}
-      <div className="flex-1 w-full max-w-sm sm:max-w-md px-3 flex flex-col items-center justify-center min-h-0 relative z-20 pb-2 sm:pb-3">
+      {/* 2. ATTACHED MAIN STACK: FILTERS, CARD, AND CONTROLS (Tightly coupled with balanced spacing below card) */}
+      <div className="flex-1 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl landscape:max-w-3xl landscape:sm:max-w-4xl px-3 flex flex-col items-center justify-center min-h-0 relative z-20 pb-2 sm:pb-3">
         {/* COMPACT ICON-ONLY FILTER BAR */}
         <FilterBar
           filters={filters}
@@ -992,15 +1013,54 @@ const App: React.FC = () => {
             ) : (
               <div className="text-[9px] font-mono text-zinc-500 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500/80 animate-pulse" />
-                <span>Swipe right to save • Swipe up for Sicko Mode</span>
+                <span>Swipe right to save • Swipe up for The Deep End</span>
               </div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* MAIN CARD STACK STAGE (Responsive height prevents vertical scroll on tablets) */}
-        <main className="w-full relative flex items-center justify-center shrink min-h-0">
-          <div className="relative w-full h-[51vh] sm:h-[54vh] md:h-[56vh] max-h-[490px] aspect-[2/3] sm:aspect-[3/4] flex items-center justify-center">
+        {/* First-Run Gesture Hint */}
+        <AnimatePresence>
+          {totalSwipes === 0 && !dismissedGestureHint && stack.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -4, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              className="w-full bg-zinc-950/90 border border-zinc-800 rounded-xl p-2.5 mb-1.5 shadow-xl backdrop-blur-xl relative z-30 flex items-start justify-between gap-2"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 text-[11px] font-black uppercase text-white tracking-wide mb-1">
+                  <Sparkles className="w-3 h-3 text-red-500 shrink-0" />
+                  <span>Swipe Gestures</span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px] font-mono text-zinc-300">
+                  <div className="truncate"><span className="text-emerald-400 font-bold">→ Right:</span> save</div>
+                  <div className="truncate"><span className="text-red-400 font-bold">↑ Up:</span> super-like / Deep End</div>
+                  <div className="truncate"><span className="text-amber-400 font-bold">↓ Down:</span> watchlist</div>
+                  <div className="truncate"><span className="text-zinc-400 font-bold">← Left:</span> pass</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setDismissedGestureHint(true);
+                  try {
+                    localStorage.setItem('dread_dismissed_gesture_hint', 'true');
+                  } catch (e) {}
+                }}
+                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900 transition-colors shrink-0"
+                title="Dismiss hint"
+                aria-label="Dismiss gesture hint"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* MAIN CARD STACK STAGE (Responsive height prevents vertical scroll on tablets and landscape) */}
+        <main className="w-full relative flex items-center justify-center shrink min-h-0 flex-1">
+          <div className="relative w-full h-[52vh] sm:h-[55vh] md:h-[58vh] max-h-[520px] aspect-[2/3] sm:aspect-[3/4] landscape:aspect-auto landscape:h-[62vh] sm:landscape:h-[68vh] landscape:max-h-[460px] flex items-center justify-center">
             <AnimatePresence>
               {stack.length > 0 ? (
                 stack.slice(0, 2).reverse().map((movie, index) => (
@@ -1009,13 +1069,16 @@ const App: React.FC = () => {
                     movie={movie}
                     onSwipe={handleSwipe}
                     isTop={index === 1}
+                    onAction={handleSwipe}
+                    onUndo={handleUndo}
+                    canUndo={!!lastAction}
                   />
                 ))
               ) : (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.92 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="text-center p-6 sm:p-7 bg-zinc-950/95 rounded-3xl border border-zinc-800 shadow-2xl backdrop-blur-2xl w-full flex flex-col items-center justify-between"
+                  className="text-center p-6 sm:p-7 bg-zinc-950/95 rounded-3xl border border-zinc-800 shadow-2xl backdrop-blur-2xl w-full max-w-md flex flex-col items-center justify-between"
                 >
                   <div>
                     <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
@@ -1076,8 +1139,8 @@ const App: React.FC = () => {
           </div>
         </main>
 
-        {/* 3. DEDICATED CONTROLS DOCK: SET 30-40PX BELOW THE CARD */}
-        <div className="w-full shrink-0 mt-7 sm:mt-8 flex flex-col items-center gap-1.5 z-30">
+        {/* 3. DEDICATED CONTROLS DOCK: SET 30-40PX BELOW THE CARD (Portrait only; landscape controls are integrated in the card) */}
+        <div className="w-full shrink-0 mt-6 sm:mt-7 landscape:hidden flex flex-col items-center gap-1.5 z-30">
           {/* Swipe Button Pod */}
           <div className="flex items-center gap-2.5 sm:gap-3 bg-zinc-950/90 p-1.5 px-3 rounded-full border border-zinc-800/90 shadow-2xl backdrop-blur-2xl">
             {/* 1. Pass / Rotten (Left) */}
@@ -1103,7 +1166,7 @@ const App: React.FC = () => {
             {/* 3. SICKO MODE / 5-Star Anchor (Up) */}
             <button
               type="button"
-              title="SICKO MODE (Up Arrow): 5-Star Anchor that spawns similar transgressive masterworks into deck"
+              title="THE DEEP END (Up Arrow): 5-Star Anchor that spawns similar standout films into the deck"
               onClick={() => handleSwipe(SwipeDirection.UP)}
               className="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-tr from-red-700 via-red-600 to-rose-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-red-950 hover:brightness-110 transition-all active:scale-90 border-2 border-red-400/40 relative group"
             >
@@ -1196,6 +1259,40 @@ const App: React.FC = () => {
         onLinkCustomSheet={handleLinkCustomSheet}
         onToggleAutoSync={handleToggleAutoSync}
       />
+
+      {/* Reset Confirmation Dialog */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-sm w-full p-4 sm:p-5 shadow-2xl space-y-3">
+            <div className="flex items-center gap-2 text-amber-400 text-xs font-bold">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+              <span>New Search</span>
+            </div>
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              Start a new search? Your saved Vault is kept.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowResetConfirm(false);
+                  handleResetDeck();
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-500 text-white font-black uppercase text-xs py-2 rounded-xl transition-all shadow-md active:scale-95"
+              >
+                Start New Search
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowResetConfirm(false)}
+                className="px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold uppercase text-xs rounded-xl border border-zinc-700 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

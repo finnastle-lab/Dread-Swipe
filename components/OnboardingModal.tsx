@@ -22,10 +22,9 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 }) => {
   const [selectedVibes, setSelectedVibes] = useState<PrimaryVibe[]>([
     'Elevated',
-    'Body Horror',
     'Folk / Ritual',
-    'Prestige Crime',
-    'Sicko Mode'
+    'Cerebral Sci-Fi',
+    'International Arthouse'
   ]);
   const [dreadIntensity, setDreadIntensity] = useState<DreadIntensity>(3);
   const [noHorrorComedy, setNoHorrorComedy] = useState<boolean>(true);
@@ -72,29 +71,39 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-rose-900/10 blur-[100px] pointer-events-none" />
 
           {/* Header */}
-          <div className="mb-3 sm:mb-4 relative z-10 flex items-center justify-between border-b border-zinc-850 pb-2.5">
-            <div className="flex items-center gap-2">
-              <span className="bg-red-600/20 text-red-400 border border-red-500/30 text-[10px] font-black uppercase px-2 py-0.5 rounded-full tracking-widest flex items-center gap-1">
-                <Flame className="w-3 h-3 text-red-500" /> Taste Protocol
+          <div className="mb-2 relative z-10 border-b border-zinc-850 pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="bg-red-600/20 text-red-400 border border-red-500/30 text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-widest flex items-center gap-1">
+                  <Flame className="w-3 h-3 text-red-500" /> Taste Protocol
+                </span>
+                <span className="text-zinc-500 text-[10px] font-mono">Step {step} of 2</span>
+              </div>
+              <span className="text-[10px] font-mono text-zinc-400">
+                {step === 1 ? `${selectedVibes.length} Selected` : 'Calibration'}
               </span>
-              <span className="text-zinc-500 text-xs font-mono">Step {step} of 2</span>
             </div>
-            <span className="text-[11px] font-mono text-zinc-400">
-              {step === 1 ? `${selectedVibes.length} Selected` : 'Calibration'}
-            </span>
+            <p className="text-[10px] text-zinc-400 mt-0.5 font-mono">
+              Set up your film taste — 2 quick steps
+            </p>
           </div>
 
           {step === 1 ? (
             /* STEP 1: Primary Vibe Chips Selection */
-            <div className="space-y-3 relative z-10">
-              <div>
-                <h3 className="text-sm sm:text-base font-black uppercase tracking-wider text-white">
-                  Select Core Vibe DNA
-                </h3>
-                <p className="text-[11px] text-zinc-400">Pick the subgenres you want in your deck.</p>
+            <div className="space-y-2 relative z-10">
+              {/* Condensed Welcome Intro Panel */}
+              <div id="onboarding-welcome-panel" className="bg-zinc-900/80 border border-zinc-800/90 rounded-xl px-2.5 py-1.5 text-[11px] text-zinc-300 leading-snug">
+                Swipe to build your horror/cult/arthouse watchlist — right to save, up to super-like.
               </div>
 
-              <div className="grid grid-cols-2 gap-2 max-h-[50vh] sm:max-h-[48vh] overflow-y-auto pr-0.5">
+              <div>
+                <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white">
+                  Select Core Vibe DNA
+                </h3>
+                <p className="text-[10px] text-zinc-400">Pick the subgenres you want in your deck.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 max-h-[46vh] sm:max-h-[48vh] overflow-y-auto pr-0.5">
                 {PRIMARY_VIBES.map((vibe) => {
                   const isSelected = selectedVibes.includes(vibe.id);
                   return (
@@ -102,52 +111,48 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       key={vibe.id}
                       type="button"
                       onClick={() => toggleVibe(vibe.id)}
-                      className={`text-left p-2.5 rounded-xl border transition-all duration-200 flex flex-col justify-between ${
+                      className={`text-left p-2 rounded-xl border transition-all duration-200 flex flex-col justify-between ${
                         isSelected
                           ? 'bg-zinc-900 border-red-500/80 shadow-sm shadow-red-950/30'
                           : 'bg-zinc-950/70 border-zinc-850 hover:border-zinc-700 opacity-60 hover:opacity-100'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className={`text-xs font-black uppercase tracking-tight truncate ${isSelected ? 'text-white' : 'text-zinc-400'}`}>
+                      <div className="flex items-start justify-between gap-1 mb-0.5">
+                        <span className={`text-[11px] font-black uppercase tracking-tight truncate ${isSelected ? 'text-white' : 'text-zinc-400'}`}>
                           {vibe.title}
                         </span>
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center border text-[9px] shrink-0 transition-colors ${
+                        <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border text-[8px] shrink-0 transition-colors ${
                           isSelected ? 'bg-red-600 border-red-500 text-white' : 'border-zinc-700 bg-zinc-900 text-transparent'
                         }`}>
                           ✓
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {vibe.anchors.slice(0, 2).map((anchor, i) => (
-                          <span key={i} className="text-[8.5px] bg-zinc-800/80 text-zinc-300 px-1 py-0.2 rounded font-mono truncate max-w-[90px]">
-                            {anchor}
-                          </span>
-                        ))}
-                      </div>
+                      <p className="text-[9.5px] text-zinc-400 italic line-clamp-1 leading-tight">
+                        "{vibe.subtext}"
+                      </p>
                     </button>
                   );
                 })}
               </div>
 
-              <div className="pt-1 space-y-2">
+              <div className="pt-0.5 space-y-1.5">
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="w-full bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-wider text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-red-900/40 transition-all active:scale-95"
+                  className="w-full bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-wider text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 shadow-lg shadow-red-900/40 transition-all active:scale-95"
                 >
                   <span>Continue to Dread Calibration</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
 
                 {onOpenSheetsModal && (
                   <button
                     type="button"
                     onClick={onOpenSheetsModal}
-                    className="w-full text-center text-[11px] font-mono text-emerald-400 hover:text-emerald-300 flex items-center justify-center gap-1.5 transition-colors pt-0.5"
+                    className="w-full text-center text-[10px] font-mono text-emerald-400 hover:text-emerald-300 flex items-center justify-center gap-1 transition-colors"
                   >
-                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    <FileSpreadsheet className="w-3 h-3" />
                     <span>
                       {syncState?.isConnected ? '✓ Google Sheets Master Vault Linked' : 'Connect Google Sheets to auto-load watched films'}
                     </span>
@@ -158,9 +163,9 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   <button
                     type="button"
                     onClick={onOpenImport}
-                    className="w-full text-center text-[11px] font-mono text-zinc-500 hover:text-zinc-300 flex items-center justify-center gap-1.5 transition-colors pt-0.5"
+                    className="w-full text-center text-[10px] font-mono text-zinc-500 hover:text-zinc-300 flex items-center justify-center gap-1 transition-colors"
                   >
-                    <UploadCloud className="w-3.5 h-3.5 text-zinc-400" />
+                    <UploadCloud className="w-3 h-3 text-zinc-400" />
                     <span>Or upload Letterboxd watched.csv manually</span>
                   </button>
                 )}
@@ -168,7 +173,14 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
           ) : (
             /* STEP 2: Intensity Dial & Hard Excludes */
-            <div className="space-y-3 relative z-10">
+            <div className="space-y-2 relative z-10">
+              <div>
+                <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white">
+                  Dread Calibration
+                </h3>
+                <p className="text-[10px] text-zinc-400">Choose how intense you want it</p>
+              </div>
+
               <DreadDial
                 value={dreadIntensity}
                 onChange={setDreadIntensity}
@@ -176,11 +188,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
               />
 
               {/* Hard Exclude Filter */}
-              <div className="bg-zinc-950/80 border border-zinc-800 rounded-xl p-3 space-y-2">
+              <div className="bg-zinc-950/80 border border-zinc-800 rounded-xl p-2.5 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <ShieldAlert className="w-3.5 h-3.5 text-red-500" />
-                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-300">
+                    <ShieldAlert className="w-3 h-3 text-red-500" />
+                    <span className="text-[9px] font-black uppercase tracking-wider text-zinc-300">
                       Exclusions & Palate
                     </span>
                   </div>
@@ -188,23 +200,23 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                 <div 
                   onClick={() => setNoHorrorComedy(!noHorrorComedy)}
-                  className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-all ${
+                  className={`flex items-center justify-between p-1.5 rounded-lg border cursor-pointer transition-all ${
                     noHorrorComedy 
                       ? 'bg-red-950/30 border-red-600/50' 
                       : 'bg-zinc-900/40 border-zinc-800 opacity-60'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 ${
+                    <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border shrink-0 ${
                       noHorrorComedy ? 'bg-red-600 border-red-500 text-white' : 'border-zinc-700 bg-zinc-900'
                     }`}>
-                      {noHorrorComedy && <Check className="w-3 h-3" />}
+                      {noHorrorComedy && <Check className="w-2.5 h-2.5" />}
                     </div>
                     <div>
-                      <div className="text-xs font-black text-white uppercase tracking-tight">
+                      <div className="text-[11px] font-black text-white uppercase tracking-tight">
                         ⛔ No Horror-Comedy
                       </div>
-                      <p className="text-[10px] text-zinc-400 leading-tight">
+                      <p className="text-[9.5px] text-zinc-400 leading-tight">
                         Excludes parodies, slapstick gore, and comedy-horror.
                       </p>
                     </div>
@@ -213,23 +225,23 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                 <div 
                   onClick={() => setSubtitledOk(!subtitledOk)}
-                  className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-all ${
+                  className={`flex items-center justify-between p-1.5 rounded-lg border cursor-pointer transition-all ${
                     subtitledOk 
                       ? 'bg-zinc-900 border-zinc-700' 
                       : 'bg-zinc-900/40 border-zinc-800 opacity-60'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 ${
+                    <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border shrink-0 ${
                       subtitledOk ? 'bg-zinc-100 border-white text-black' : 'border-zinc-700 bg-zinc-900'
                     }`}>
-                      {subtitledOk && <Check className="w-3 h-3" />}
+                      {subtitledOk && <Check className="w-2.5 h-2.5" />}
                     </div>
                     <div>
-                      <div className="text-xs font-black text-white uppercase tracking-tight">
+                      <div className="text-[11px] font-black text-white uppercase tracking-tight">
                         Subtitled & International Extremity
                       </div>
-                      <p className="text-[10px] text-zinc-400 leading-tight">
+                      <p className="text-[9.5px] text-zinc-400 leading-tight">
                         Includes French extremity, Asian horror, and Nordic cinema.
                       </p>
                     </div>
@@ -237,18 +249,18 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </div>
               </div>
 
-              <div className="pt-1 flex items-center justify-between gap-2">
+              <div className="pt-0.5 flex items-center justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="text-zinc-500 hover:text-zinc-300 font-bold uppercase text-[11px] tracking-wider px-3 py-2"
+                  className="text-zinc-500 hover:text-zinc-300 font-bold uppercase text-[10px] tracking-wider px-2 py-1.5"
                 >
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={handleFinish}
-                  className="flex-1 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-wider text-xs py-2.5 rounded-xl shadow-lg shadow-red-950/60 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  className="flex-1 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-wider text-xs py-2 rounded-xl shadow-lg shadow-red-950/60 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                 >
                   <Flame className="w-3.5 h-3.5" />
                   <span>Start Swiping</span>

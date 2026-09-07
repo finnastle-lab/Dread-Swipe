@@ -1,13 +1,13 @@
 import { Movie, PrimaryVibe, DreadIntensity } from './types';
 import { EXTENDED_CURATED_MOVIES } from './data/extendedMovies';
 
-export const TMDB_API_KEY = 'db7b89d2113d782e3f1769449fc380d5';
+export const TMDB_API_KEY = process.env.TMDB_API_KEY as string;
 export const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 export const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 export const APP_NAME = "DREADSWIPE";
-export const APP_TAGLINE = "Craft over shock. Dread over jump scares. If it's not willing to rot from the inside, keep swiping.";
-export const APP_PITCH = "Elevated dread with a body count. Craft over cheap scares — but never so arty it forgets to hurt.";
+export const APP_TAGLINE = "Craft over jump-scares. The weird, the cult, and the wonderful.";
+export const APP_PITCH = "Elevated genre, cult classics, and arthouse that stays with you. Swipe to build your watchlist.";
 
 export interface VibeDefinition {
   id: PrimaryVibe;
@@ -69,7 +69,7 @@ export const PRIMARY_VIBES: VibeDefinition[] = [
   },
   {
     id: 'Sicko Mode',
-    title: 'Sicko Mode',
+    title: 'The Deep End',
     subtext: 'Full commitment, no mercy',
     anchors: ['Martyrs', 'The Substance', 'The House That Jack Built', 'The Sadness'],
     color: 'from-red-600 via-rose-700 to-black',
@@ -77,12 +77,20 @@ export const PRIMARY_VIBES: VibeDefinition[] = [
   }
 ];
 
-export const DREAD_LEVELS: Record<DreadIntensity, { label: string; description: string; color: string; skulls: string }> = {
-  1: { label: 'Unsettling', description: 'Creeping atmospheric unease and tension', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10', skulls: '🩸' },
-  2: { label: 'Bleak', description: 'Relentless moral rot and heavy existential dread', color: 'text-orange-400 border-orange-500/30 bg-orange-500/10', skulls: '🩸🩸' },
-  3: { label: 'Transgressive', description: 'Breaches psychological and physical boundaries', color: 'text-rose-400 border-rose-500/30 bg-rose-500/10', skulls: '🩸🩸🩸' },
-  4: { label: 'Punishing', description: 'Visceral, grueling ordeal that refuses to let up', color: 'text-red-500 border-red-500/40 bg-red-500/15', skulls: '🩸🩸🩸🩸' },
-  5: { label: 'Sicko Mode', description: 'Full extremity, zero compromise, watch through fingers', color: 'text-red-400 border-red-600 bg-red-950/60 animate-pulse', skulls: '🩸🩸🩸🩸🩸' }
+export interface DreadLevel {
+  label: string;
+  description: string;
+  color: string;
+  skulls: string;
+  short: string;
+}
+
+export const DREAD_LEVELS: Record<DreadIntensity, DreadLevel> = {
+  1: { label: 'Unsettling', description: 'Creeping atmospheric unease and tension', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10', skulls: '🩸', short: 'Uneasy' },
+  2: { label: 'Bleak', description: 'Relentless moral rot and heavy existential dread', color: 'text-orange-400 border-orange-500/30 bg-orange-500/10', skulls: '🩸🩸', short: 'Bleak' },
+  3: { label: 'Boundary-pushing', description: "Goes to places most films won't.", color: 'text-rose-400 border-rose-500/30 bg-rose-500/10', skulls: '🩸🩸🩸', short: 'Boundary' },
+  4: { label: 'Extreme', description: 'Uncompromising and intense — not for a first date.', color: 'text-red-500 border-red-500/40 bg-red-500/15', skulls: '🩸🩸🩸🩸', short: 'Extreme' },
+  5: { label: 'The Deep End', description: 'The deep end. Full commitment, no apologies.', color: 'text-red-400 border-red-600 bg-red-950/60 animate-pulse', skulls: '🩸🩸🩸🩸🩸', short: 'Deep End' }
 };
 
 /**

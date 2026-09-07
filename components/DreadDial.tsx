@@ -44,7 +44,7 @@ const DreadDial: React.FC<DreadDialProps> = ({
               key={level}
               type="button"
               onClick={() => onChange(level)}
-              className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-xl border transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center py-2 px-1 min-h-[58px] sm:min-h-[64px] rounded-xl border transition-all duration-200 ${
                 isSelected
                   ? 'bg-red-600/20 border-red-500 shadow-lg shadow-red-950/50 scale-[1.03]'
                   : isPast
@@ -52,9 +52,9 @@ const DreadDial: React.FC<DreadDialProps> = ({
                   : 'bg-zinc-950 border-zinc-850 text-zinc-600 hover:border-zinc-700'
               }`}
             >
-              <span className="text-base sm:text-lg mb-0.5">{levelInfo.skulls}</span>
-              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight text-center truncate max-w-full">
-                {levelInfo.label}
+              <span className="text-sm sm:text-base mb-0.5">{levelInfo.skulls}</span>
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight text-center leading-tight">
+                {levelInfo.short}
               </span>
             </button>
           );

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { PrimaryVibe, DreadIntensity, FilterState } from '../types';
-import { PRIMARY_VIBES, DREAD_LEVELS } from '../constants';
+import { PRIMARY_VIBES } from '../constants';
 import { 
   Filter, 
   Flame, 
@@ -11,12 +11,8 @@ import {
   Trees, 
   ShieldAlert, 
   Cpu, 
-  Globe,
-  CheckCircle2,
-  SlidersHorizontal,
-  Info
+  Globe
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 
 interface FilterBarProps {
   filters: FilterState;
@@ -47,6 +43,28 @@ const getVibeIcon = (id: PrimaryVibe) => {
   }
 };
 
+// Short label mapper for vibe icons
+const getShortVibeLabel = (id: PrimaryVibe) => {
+  switch (id) {
+    case 'Elevated':
+      return 'Elevated';
+    case 'Body Horror':
+      return 'Body';
+    case 'Folk / Ritual':
+      return 'Folk';
+    case 'Prestige Crime':
+      return 'Crime';
+    case 'Cerebral Sci-Fi':
+      return 'Sci-Fi';
+    case 'International Arthouse':
+      return 'Arthouse';
+    case 'Sicko Mode':
+      return 'Deep End';
+    default:
+      return id;
+  }
+};
+
 const FilterBar: React.FC<FilterBarProps> = ({
   filters,
   onFilterChange,
@@ -57,7 +75,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeftState, setScrollLeftState] = useState(0);
-  const [hoveredVibe, setHoveredVibe] = useState<PrimaryVibe | 'settings' | null>(null);
 
   const toggleVibe = (vibe: PrimaryVibe) => {
     let next: PrimaryVibe[];
@@ -90,42 +107,36 @@ const FilterBar: React.FC<FilterBarProps> = ({
     setIsDragging(false);
   };
 
-  const hoveredVibeDef = PRIMARY_VIBES.find(v => v.id === hoveredVibe);
-
   return (
-    <div className="w-full max-w-sm sm:max-w-md px-3 shrink-0 z-30 relative">
-      <div className="flex items-center justify-between bg-zinc-950/70 border border-zinc-800/60 rounded-full py-1 px-2.5 backdrop-blur-xl shadow-lg">
-        {/* Filter Toggle Button (Clean icon, no clunky holding shape) */}
+    <div className="w-full max-w-sm sm:max-w-lg md:max-w-xl landscape:max-w-2xl px-2 shrink-0 z-30 relative">
+      <div className="flex items-center justify-between bg-zinc-950/70 border border-zinc-800/60 rounded-2xl py-1 px-2.5 backdrop-blur-xl shadow-lg">
+        {/* Filter Toggle Button (Clean icon with visible label - tap only) */}
         <button
           type="button"
           onClick={onToggleOpen}
-          onMouseEnter={() => setHoveredVibe('settings')}
-          onMouseLeave={() => setHoveredVibe(null)}
           title={`Dread Calibration & Rules (${filters.selectedVibes.length} vibes active)`}
           aria-label="Filter Settings"
-          className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-opacity active:scale-90 ${
+          className={`flex flex-col items-center justify-center shrink-0 transition-opacity active:scale-90 px-1 py-0.5 ${
             isOpen
               ? 'opacity-100 text-red-500'
               : 'opacity-40 hover:opacity-80 text-zinc-400'
           }`}
         >
           <Filter className="w-3.5 h-3.5" />
+          <span className="text-[8px] font-medium leading-tight mt-0.5">Filter</span>
         </button>
 
         {/* Subtle Separator */}
-        <div className="w-px h-3.5 bg-zinc-800/80 shrink-0 mx-1.5" />
+        <div className="w-px h-6 bg-zinc-800/80 shrink-0 mx-1.5" />
 
-        {/* Draggable & Minimal Icon-Only Vibe Buttons */}
+        {/* Draggable Vibe Buttons with visible short text labels (Tap to toggle) */}
         <div
           ref={scrollRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUpOrLeave}
-          onMouseLeave={() => {
-            handleMouseUpOrLeave();
-            setHoveredVibe(null);
-          }}
-          className={`flex-1 flex items-center justify-around gap-1.5 overflow-x-auto py-0.5 px-0.5 no-scrollbar cursor-grab ${
+          onMouseLeave={handleMouseUpOrLeave}
+          className={`flex-1 flex items-center justify-around gap-1 overflow-x-auto py-0.5 px-0.5 no-scrollbar cursor-grab ${
             isDragging ? 'cursor-grabbing select-none' : ''
           }`}
         >
@@ -138,13 +149,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 key={v.id}
                 type="button"
                 onClick={() => toggleVibe(v.id)}
-                onMouseEnter={() => {
-                  if (!isDragging) setHoveredVibe(v.id);
-                }}
-                onMouseLeave={() => setHoveredVibe(null)}
-                title={`${v.title} — ${v.subtext}`}
                 aria-label={v.title}
-                className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-opacity active:scale-90 ${
+                className={`flex flex-col items-center justify-center shrink-0 transition-opacity active:scale-90 px-1 py-0.5 ${
                   isSelected
                     ? isSicko
                       ? 'opacity-100 text-red-500'
@@ -153,90 +159,30 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 }`}
               >
                 {getVibeIcon(v.id)}
+                <span className={`text-[8px] font-medium leading-tight mt-0.5 ${
+                  isSelected ? (isSicko ? 'text-red-400 font-bold' : 'text-zinc-200') : 'text-zinc-500'
+                }`}>
+                  {getShortVibeLabel(v.id)}
+                </span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* HOVER EXPLAINER TOOLTIP POPUP (Matches style of bottom action buttons) */}
-      <AnimatePresence>
-        {hoveredVibe && !isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.96 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-3 right-3 top-11 z-40 bg-zinc-950/95 border border-zinc-800 rounded-2xl p-3 shadow-2xl backdrop-blur-2xl pointer-events-none"
-          >
-            {hoveredVibe === 'settings' ? (
-              <div className="flex items-start gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-400 shrink-0">
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase text-white tracking-tight">
-                      Dread Deck Calibration
-                    </span>
-                    <span className="text-[9px] font-mono text-zinc-400 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
-                      Click to open
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
-                    Fine-tune minimum dread score (1★ to 5★), strict horror-comedy exclusions, and subtitled extremity settings.
-                  </p>
-                </div>
-              </div>
-            ) : hoveredVibeDef ? (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-6 h-6 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-400 shrink-0">
-                      {getVibeIcon(hoveredVibeDef.id)}
-                    </div>
-                    <span className="text-xs font-black uppercase text-white tracking-tight">
-                      {hoveredVibeDef.title}
-                    </span>
-                  </div>
-                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                    filters.selectedVibes.includes(hoveredVibeDef.id)
-                      ? 'bg-red-950 text-red-300 border-red-600'
-                      : 'bg-zinc-900 text-zinc-500 border-zinc-800'
-                  }`}>
-                    {filters.selectedVibes.includes(hoveredVibeDef.id) ? 'Active in Deck' : 'Disabled'}
-                  </span>
-                </div>
-
-                <p className="text-[11px] text-zinc-300 italic leading-snug">
-                  "{hoveredVibeDef.subtext}"
-                </p>
-
-                <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto text-[9px] font-mono text-zinc-400">
-                  <span className="text-zinc-500 shrink-0 uppercase font-black text-[8px]">Anchors:</span>
-                  <span className="text-zinc-300 truncate">
-                    {hoveredVibeDef.anchors.slice(0, 3).join(' • ')}
-                  </span>
-                </div>
-
-                <div className="text-[9px] font-mono text-zinc-500 flex items-center justify-between border-t border-zinc-900 pt-1 mt-1">
-                  <span>Click icon to toggle on/off</span>
-                  <span>{filters.selectedVibes.includes(hoveredVibeDef.id) ? '✓ Included' : '✕ Excluded'}</span>
-                </div>
-              </div>
-            ) : null}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Expanded Filter Panel */}
       {isOpen && (
         <div className="mt-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5 space-y-3 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-red-500" />
-              <span>Dread Deck Calibration</span>
-            </span>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-red-500" />
+                <span>Dread Calibration</span>
+              </span>
+              <p className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                Choose how intense you want it
+              </p>
+            </div>
             <button 
               type="button"
               onClick={onToggleOpen} 
@@ -283,7 +229,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 Min Dread Score:
               </label>
               <span className="text-[10px] font-mono text-red-400 font-bold">
-                {filters.minDread === 5 ? '🔥 5★ Sicko Only' : `${filters.minDread}★ & Above`}
+                {filters.minDread === 5 ? '🔥 5★ Deep End Only' : `${filters.minDread}★ & Above`}
               </span>
             </div>
             <div className="grid grid-cols-5 gap-1.5">
